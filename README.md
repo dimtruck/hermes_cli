@@ -20,7 +20,8 @@ Available commands
 
     ./bin/hemres_exec list
     ./bin/hemres_exec list -a repose
-    ./bin/hemres_exec list -a repose
+    ./bin/hemres_exec list -a repose -s atom_hopper
+    ./bin/hemres_exec status -a repose
     ./bin/hemres_exec status -a repose -s atom_hopper
     ./bin/hemres_exec status -a repose -s atom_hopper -t load
     ./bin/hemres_exec start -a repose -s atom_hopper -t load {whatever other data i need}
