@@ -10,6 +10,11 @@ To install the CLI, you'll need to first install Ruby.  The clone this repositor
 
     bundle install
 
+Add HERMES_URI to your environment variable, setting it to your api url:
+
+    export HERMES_URI=http://api.myperformanceui.com
+
+
 Running
 -----------
 
