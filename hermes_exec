@@ -1,0 +1,140 @@
+require "thor"
+require "rest_client"
+ 
+class HermesExec < Thor
+  desc "list APP", "list applications"
+
+  def initialize(*args)
+  	super
+	RequiredEnvironments.required_variables('HERMES_URI')
+  end
+
+  #DONE
+  def list(app=nil, subapp=nil)
+  	if app && subapp
+  		# list app and subapp
+  		response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/applications/#{subapp}/types", {:accept => :json}
+	  	puts "test types for #{app}/#{subapp}: #{JSON.parse(response.body).map {|test_type| test_type['id']}}"
+  	elsif app
+  		# list sub applications for this app
+  		response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/applications", {:accept => :json}
+	  	puts "sub applications for #{app}: #{JSON.parse(response.body).map {|sub_application| sub_application['id']}}"
+  	else
+  		# list applications
+  		response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}", {:accept => :json}
+	  	puts "applications: #{JSON.parse(response.body).map {|application| application['id']}}"
+  	end
+  end
+
+  desc "status APP", "list applications"
+  def status(app, subapp=nil, testtype=nil)
+  	if testtype && subapp
+  		# list status for app/subapp/testtype
+  		# DONE
+  		begin 
+  			response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/running_tests/#{subapp}/#{testtype}", {:accept => :json}
+	  		puts "status for #{app}/#{subapp}/#{testtype}\n"
+	  		result = JSON.parse(response.body)
+	  		puts "guid --> #{result['guid']}\n"
+	  		puts "started --> #{Time.at(result['time'])}\n"
+	  		puts "supposed to end --> #{Time.at(result['time'] + result['length'] * 60)}\n"
+	  		puts "length --> #{result['length']}\n"
+	  		puts "name --> #{result['name']}\n"
+	  		puts "runner --> #{result['runner']}\n"
+	  		puts "flavor_type --> #{result['flavor_type']}\n"
+	  		puts "release --> #{result['release']}\n"
+  		rescue => e
+  			puts "Nothing is running for #{app}/#{subapp}/#{testtype}\n"
+  		end
+  	elsif subapp
+  		# list sub applications for this app
+  		# DONE
+  		begin 
+  			response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/running_tests/#{subapp}", {:accept => :json}
+	  		puts "status for #{app}/#{subapp}\n"
+	  		results = JSON.parse(response.body)
+	  		puts response.body
+	  		results.each do |result|
+	  			puts "==================="
+		  		puts "guid --> #{result['guid']}\n"
+		  		puts "started --> #{Time.at(result['time'])}\n"
+		  		puts "supposed to end --> #{Time.at(result['time'] + result['length'] * 60)}\n"
+		  		puts "length --> #{result['length']}\n"
+		  		puts "name --> #{result['name']}\n"
+		  		puts "runner --> #{result['runner']}\n"
+		  		puts "flavor_type --> #{result['flavor_type']}\n"
+		  		puts "release --> #{result['release']}\n"
+		  	end
+  		rescue => e
+  			puts "Nothing is running for #{app}/#{subapp}\n"
+  		end
+  	else
+  		# list applications
+  		# DONE
+  		response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/running_tests", {:accept => :json}
+  		puts "list statistics for #{app}:\n"
+  		JSON.parse(response.body).map do |sub_application| 
+  			puts "#{sub_application['id']} --> #{sub_application['status']}"
+  		end
+  	end
+  end
+
+  desc "stats APP SUBAPP", "list application statistics"
+  def stats(app, subapp, testtype=nil)
+  	if testtype && subapp
+  		# list status for app/subapp/testtype
+  		# not done
+	  	puts "list stats"
+  	else
+  		# list sub applications for this app
+  		# DONE
+  		response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/stats/#{subapp}", {:accept => :json}
+  		puts "list statistics for #{app}/#{subapp}:\n"
+  		JSON.parse(response.body).map do |test_type_key, value| 
+  			puts "#{test_type_key} --> #{value['test_count']}"
+  		end
+  	end
+  end
+
+  desc "start APP, SUBAPP, TESTTYPE", "list applications"
+  def start(app, subapp, testtype)
+  	# not done
+  	# length
+  	# release (master or exact version)
+  	# branch (optional)
+  	# name
+  	# runner
+  	# flavor-type
+  	# test-id (defaults to 0)
+  	# runs a script that starts and stops both repose and origin
+  	# won't start if one's already started
+=begin
+echo "start load repose test"
+ruby nightly_test.rb --app repose --sub-app dbaas --action start --test-type load --length 60 --release master --name "nightly test against master branch" --runner "jmeter" --flavor-type performance --with-repose true --test-id 0
+sleep 60m
+echo "stop load repose test"
+ruby nightly_test.rb --app repose --sub-app dbaas --action stop --test-type load --length 60 --release master --name "nightly test against master branch" --runner "jmeter" --flavor-type performance --with-repose true --test-id 0
+
+echo "start load origin test"
+ruby nightly_test.rb --app repose --sub-app dbaas --action start --test-type load --length 60 --name "nightly test against master branch" --runner "jmeter" --flavor-type performance --test-id 0
+sleep 60m
+
+echo "stop load origin test"
+ruby nightly_test.rb --app repose --sub-app dbaas --action stop --test-type load --length 60 --name "nightly test against master branch" --runner "jmeter" --flavor-type performance --test-id 0
+echo "finished load test."
+=end  	
+  end
+end
+
+class RequiredEnvironments 
+	def self.required_variables(*args)
+		args.each do |arg|
+			raise ArgumentError.new("argument #{arg} is not set in environment variables") unless ENV[arg]
+		end
+	end
+	def self.get_variable(name)
+		ENV[name]
+	end
+end
+ 
+HermesExec.start(ARGV)
