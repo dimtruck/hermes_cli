@@ -25,10 +25,10 @@ Execute it directly from this repository
 Available commands
 
     ruby hemres_exec list
-    ruby hemres_exec list -a repose
-    ruby hemres_exec list -a repose -s atom_hopper
-    ruby hemres_exec status -a repose
-    ruby hemres_exec status -a repose -s atom_hopper
-    ruby hemres_exec status -a repose -s atom_hopper -t load
-    ruby hemres_exec start -a repose -s atom_hopper -t load {whatever other data i need}
-    ruby hemres_exec stop -a repose -s atom_hopper -t load {whatever other data i need}
+    ruby hemres_exec list repose
+    ruby hemres_exec list repose translation
+    ruby hemres_exec status repose
+    ruby hemres_exec status repose translation
+    ruby hemres_exec status repose translation load
+    ruby hemres_exec start repose translation load {whatever other data I need}
+    ruby hemres_exec stats repose translation
