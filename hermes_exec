@@ -26,7 +26,7 @@ class HermesExec < Thor
   	end
   end
 
-  desc "status APP", "list applications"
+  desc "status APP", "list application status"
   def status(app, subapp=nil, testtype=nil)
   	if testtype && subapp
   		# list status for app/subapp/testtype
@@ -96,8 +96,34 @@ class HermesExec < Thor
   	end
   end
 
-  desc "start APP, SUBAPP, TESTTYPE", "list applications"
+  desc "state APP SUBAPP TESTTYPE", "list application statistics"
+  def state(app, subapp, testtype)
+	response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/running_tests/#{subapp}/#{testtype}/state", {:accept => :json}
+	puts "list state for #{app}/#{subapp}/#{testtype}:\n"
+	puts response.body
+  end
+
+  option :length, :required => true
+  option :release
+  option :branch
+  option :name, :required => true
+  option :runner
+  option :flavor_type
+  option :test_id
+  desc "start APP, SUBAPP, TESTTYPE", "start test"
   def start(app, subapp, testtype)
+  	start_options = {}
+   	start_options[:runner] = "jmeter" unless options[:runner]
+   	start_options[:flavor_type] = "performance" unless options[:flavor_type]
+   	start_options[:test_id] = 0 unless options[:test_id]
+   	start_options[:release] = "master" unless options[:release]
+   	options.each do |id, val|
+   		start_options[id] = val
+   	end
+
+   	response = RestClient.post "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/tests/#{subapp}/#{testtype}", start_options.to_json, {:accept => :json, :content_type => :json}
+	puts "start test for #{app}/#{subapp}/#{testtype}:\n"
+	puts response.body
   	# not done
   	# length
   	# release (master or exact version)
