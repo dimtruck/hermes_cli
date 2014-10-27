@@ -30,5 +30,6 @@ Available commands
     ruby hemres_exec status repose
     ruby hemres_exec status repose translation
     ruby hemres_exec status repose translation load
+    ruby hemres_exec state repose translation load
     ruby hemres_exec start repose translation load {whatever other data I need}
     ruby hemres_exec stats repose translation
