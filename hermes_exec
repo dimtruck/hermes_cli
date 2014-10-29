@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require "thor"
 require "rest_client"
  
@@ -79,6 +80,27 @@ class HermesExec < Thor
   	end
   end
 
+  desc "running_status APP SUBAPP TESTTYPE", "list application status"
+  def running_status(app, subapp, testtype)
+    # list status for app/subapp/testtype
+    # DONE
+    begin 
+      response = RestClient.get "#{RequiredEnvironments.get_variable('HERMES_URI')}/#{app}/running_tests/#{subapp}/#{testtype}/status", {:accept => :json}
+      puts "status for #{app}/#{subapp}/#{testtype}\n"
+      result = JSON.parse(response.body)
+      puts "guid --> #{result['guid']}\n"
+      puts "started --> #{Time.at(result['time'])}\n"
+      puts "supposed to end --> #{Time.at(result['time'] + result['length'] * 60)}\n"
+      puts "length --> #{result['length']}\n"
+      puts "name --> #{result['name']}\n"
+      puts "runner --> #{result['runner']}\n"
+      puts "flavor_type --> #{result['flavor_type']}\n"
+      puts "release --> #{result['release']}\n"
+    rescue => e
+      puts "Nothing is running for #{app}/#{subapp}/#{testtype}\n"
+    end
+  end
+
   desc "stats APP SUBAPP", "list application statistics"
   def stats(app, subapp, testtype=nil)
   	if testtype && subapp
@@ -117,6 +139,7 @@ class HermesExec < Thor
    	start_options[:flavor_type] = "performance" unless options[:flavor_type]
    	start_options[:test_id] = 0 unless options[:test_id]
    	start_options[:release] = "master" unless options[:release]
+   	start_options[:branch] = "master" unless options[:branch]
    	options.each do |id, val|
    		start_options[id] = val
    	end
